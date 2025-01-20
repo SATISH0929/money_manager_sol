@@ -17,7 +17,6 @@ const transactionTypeOptions = [
   },
 ]
 
-// Write your code here
 class MoneyManager extends Component {
   state = {
     transactionsList: [],
@@ -41,18 +40,18 @@ class MoneyManager extends Component {
     event.preventDefault()
     const {titleInput, amountInput, optionId} = this.state
     const typeOption = transactionTypeOptions.find(
-      eachTrasaction => eachTrasaction.optionId === optionId,
+      eachTransaction => eachTransaction.optionId === optionId,
     )
     const {displayText} = typeOption
     const newTransaction = {
       id: v4(),
       title: titleInput,
-      amount: parseInt(amountInput),
+      amount: parseInt(amountInput, 10),
       type: displayText,
     }
 
     this.setState(prevState => ({
-      transactionsList: [...prevState.transactionsList, newTransaction],
+      transactionsList: [...prevState.transactionsList, newTransaction], // Correct array spread
       titleInput: '',
       amountInput: '',
       optionId: transactionTypeOptions[0].optionId,
@@ -98,21 +97,22 @@ class MoneyManager extends Component {
 
   getBalance = () => {
     const {transactionsList} = this.state
-    let balanceAmount = 0
-    let incomeAmount = 0
-    let expensesAmount = 0
 
-    transactionsList.forEach(eachTrasaction => {
-      if (eachTrasaction.type === transactionTypeOptions[0].displayText) {
-        incomeAmount += eachTrasaction.amount
-      } else {
-        expensesAmount += eachTrasaction.amount
-      }
-    })
+    const incomeAmount = transactionsList
+      .filter(
+        transaction =>
+          transaction.type === transactionTypeOptions[0].displayText,
+      )
+      .reduce((acc, transaction) => acc + transaction.amount, 0)
 
-    balanceAmount = incomeAmount + expensesAmount
+    const expensesAmount = transactionsList
+      .filter(
+        transaction =>
+          transaction.type === transactionTypeOptions[1].displayText,
+      )
+      .reduce((acc, transaction) => acc + transaction.amount, 0)
 
-    return balanceAmount
+    return incomeAmount - expensesAmount
   }
 
   render() {
@@ -189,10 +189,10 @@ class MoneyManager extends Component {
                     <p className="table-header-cell">Amount</p>
                     <p className="table-header-cell">Type</p>
                   </li>
-                  {transactionsList.map(eachTrasaction => (
+                  {transactionsList.map(eachTransaction => (
                     <TransactionItem
-                      key={eachTrasaction.id}
-                      transactionDetails={eachTrasaction}
+                      key={eachTransaction.id}
+                      transactionDetails={eachTransaction}
                       deleteTransaction={this.deleteTransaction}
                     />
                   ))}
